@@ -165,6 +165,7 @@ class UIManager {
     this.connectBtn = document.getElementById('connect-btn');
     this.sendBtn = document.getElementById('send-btn');
     this.clearBtn = document.getElementById('clear-btn');
+    this.exportBtn = document.getElementById('export-btn');
     this.sendInput = document.getElementById('send-input');
     this.chatMessages = document.getElementById('chat-messages');
     this.alertContainer = document.getElementById('alert-container');
@@ -189,6 +190,7 @@ class UIManager {
     this.connectBtn.addEventListener('click', () => this.toggleConnection());
     this.sendBtn.addEventListener('click', () => this.sendData());
     this.clearBtn.addEventListener('click', () => this.clearReceived());
+    this.exportBtn.addEventListener('click', () => this.exportChat());
     this.hexModeCheckbox.addEventListener('change', () => this.refreshDisplay());
     this.sendInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -232,7 +234,6 @@ class UIManager {
       this.connectBtn.textContent = 'Disconnect';
       this.connectBtn.classList.add('connected');
       this.sendCard.style.display = 'block';
-      this.receiveCard.style.display = 'block';
       this.setSettingsDisabled(true);
 
       this.portVendor.textContent = `Vendor: 0x${info.usbVendorId.toString(16).padStart(4, '0')}`;
@@ -260,7 +261,6 @@ class UIManager {
     this.connectBtn.textContent = 'Connect';
     this.connectBtn.classList.remove('connected');
     this.sendCard.style.display = 'none';
-    this.receiveCard.style.display = 'none';
     this.portInfo.style.display = 'none';
     this.setSettingsDisabled(false);
     this.showAlert('info', '✓ Serial port disconnected');
@@ -379,6 +379,37 @@ class UIManager {
     this.showAlert('info', 'Cleared all messages');
   }
 
+  exportChat() {
+    if (this.messages.length === 0) {
+      this.showAlert('info', 'No messages to export');
+      return;
+    }
+
+    // Format messages as text
+    let exportText = 'Serial Communication Log\n';
+    exportText += '========================\n\n';
+    
+    this.messages.forEach(msg => {
+      const time = msg.timestamp.toLocaleTimeString();
+      const type = msg.type === 'sent' ? '>> SENT' : '<< RECEIVED';
+      exportText += `[${time}] ${type}\n`;
+      exportText += msg.text + '\n\n';
+    });
+
+    // Create a blob and download
+    const blob = new Blob([exportText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `serial-log-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    this.showAlert('success', `✓ Exported ${this.messages.length} message(s)`);
+  }
+
   onDisconnect() {
     this.disconnect();
     this.showAlert('warning', '⚠ Serial port was disconnected');
@@ -392,8 +423,9 @@ class UIManager {
     this.flowControlSelect.disabled = disabled;
     this.sendInput.disabled = !disabled;
     this.sendBtn.disabled = !disabled;
-    this.clearBtn.disabled = !disabled;
-    this.hexModeCheckbox.disabled = !disabled;
+    this.clearBtn.disabled = false; // Always enabled for viewing/clearing messages
+    this.exportBtn.disabled = false; // Always enabled for exporting messages
+    this.hexModeCheckbox.disabled = false; // Always enabled for viewing messages
     this.addCrlfCheckbox.disabled = !disabled;
   }
 
