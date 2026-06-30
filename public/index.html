@@ -1,43 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Web Serial Port Monitor - Connect and communicate with serial devices" />
+  <title>Web Serial Monitor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>Serial Port Monitor</h1>
+      <p class="subtitle">Connect and communicate with serial devices</p>
+    </header>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    <div id="alert-container" class="alert-container"></div>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <main class="main">
+      <div id="unsupported-error" class="card error-card" style="display: none;">
+        <strong>⚠️ Browser Not Supported</strong>
+        <p>This browser does not support the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API" target="_blank">Web Serial API</a>.</p>
+        <p>Please use Chrome, Edge, or Opera.</p>
+      </div>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+      <!-- Connection Settings Card -->
+      <div id="connection-card" class="card">
+        <h2>Connection Settings</h2>
+        <div class="settings-grid">
+          <div class="setting-group">
+            <label for="baud-rate">Baud Rate</label>
+            <select id="baud-rate">
+              <option value="75">75</option>
+              <option value="1200">1200</option>
+              <option value="2400">2400</option>
+              <option value="4800">4800</option>
+              <option value="9600">9600</option>
+              <option value="14400">14400</option>
+              <option value="19200">19200</option>
+              <option value="38400">38400</option>
+              <option value="57600">57600</option>
+              <option value="115200" selected>115200</option>
+              <option value="230400">230400</option>
+              <option value="460800">460800</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="data-bits">Data Bits</label>
+            <select id="data-bits">
+              <option value="7">7</option>
+              <option value="8" selected>8</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="parity">Parity</label>
+            <select id="parity">
+              <option value="none" selected>None</option>
+              <option value="even">Even</option>
+              <option value="odd">Odd</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="stop-bits">Stop Bits</label>
+            <select id="stop-bits">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="flow-control">Flow Control</label>
+            <select id="flow-control">
+              <option value="none" selected>None</option>
+              <option value="hardware">Hardware</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <button id="connect-btn" class="btn btn-primary">Connect</button>
+          </div>
+        </div>
+
+        <div id="port-info" class="port-info" style="display: none;">
+          <p><strong>Connected Port:</strong> <span id="port-vendor">Vendor: </span> <span id="port-product">Product: </span></p>
+        </div>
+      </div>
+
+      <!-- Send Data Card -->
+      <div id="send-card" class="card" style="display: none;">
+        <h2>Send Data</h2>
+        <div class="send-group">
+          <textarea id="send-input" placeholder="Enter text to send. Press Enter to send, Shift+Enter for new line. Supports \n \r \t and \xHH hex escapes" rows="5"></textarea>
+          <div class="send-controls">
+            <label class="checkbox-label">
+              <input type="checkbox" id="add-crlf" checked />
+              Add CRLF
+            </label>
+            <button id="send-btn" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Display Card -->
+      <div id="receive-card" class="card" style="display: none;">
+        <h2>Serial Communication</h2>
+        <div class="receive-controls">
+          <label class="checkbox-label">
+            <input type="checkbox" id="hex-mode" />
+            HEX Display
+          </label>
+          <button id="clear-btn" class="btn btn-secondary">Clear</button>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
 </html>
